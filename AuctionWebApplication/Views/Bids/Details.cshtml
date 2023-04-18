@@ -1,0 +1,42 @@
+﻿@model AuctionWebApplication.Models.Bid
+
+@{
+    ViewData["Title"] = "Details";
+}
+
+<h1>Details</h1>
+
+<div>
+    <h4>Bid</h4>
+    <hr />
+    <dl class="row">
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.AuctionId)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.AuctionId)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Price)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Price)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.BidTime)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.BidTime)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Bidder)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Bidder.UserId)
+        </dd>
+    </dl>
+</div>
+<div>
+    <a asp-action="Edit" asp-route-id="@Model?.BidId">Edit</a> |
+    <a asp-action="Index">Back to List</a>
+</div>

@@ -5,8 +5,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using AuctionWebApplication;
 using AuctionWebApplication.Models;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace AuctionWebApplication.Controllers
 {
@@ -18,11 +18,13 @@ namespace AuctionWebApplication.Controllers
         {
             _context = context;
         }
-
         // GET: Auctions
         public async Task<IActionResult> Index()
         {
-            var dbauctionContext = _context.Auctions.Include(a => a.Bid).Include(a => a.Seller);
+            var dbauctionContext = _context.Auctions
+                .Include(a => a.Seller)
+                .Include(a => a.Bid)
+                .Where(a => a.EndTime > DateTime.Now);
             return View(await dbauctionContext.ToListAsync());
         }
 
@@ -35,8 +37,8 @@ namespace AuctionWebApplication.Controllers
             }
 
             var auction = await _context.Auctions
-                .Include(a => a.Bid)
                 .Include(a => a.Seller)
+                .Include(a =>a.Bid).Where(a => a.EndTime > DateTime.Now)
                 .FirstOrDefaultAsync(m => m.AuctionId == id);
             if (auction == null)
             {
@@ -66,12 +68,7 @@ namespace AuctionWebApplication.Controllers
             return RedirectToAction(nameof(Index));
             if (ModelState.IsValid)
             {
-                Console.WriteLine("!!!!!!!!!!!");
-                _context.Add(auction);
-                Console.WriteLine("11111111111");
-                await _context.SaveChangesAsync();
-                Console.WriteLine("22222222222");
-                return RedirectToAction(nameof(Index));
+                
             }
             ViewData["BidId"] = new SelectList(_context.Bids, "BidId", "BidId", auction.BidId);
             ViewData["SellerId"] = new SelectList(_context.Users, "UserId", "UserId", auction.SellerId);
@@ -94,12 +91,7 @@ namespace AuctionWebApplication.Controllers
             return View(auction);
         }
 
-       
-        
-
         // POST: Auctions/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("AuctionId,SellerId,AuctionName,AuctionDesription,StartPrice,EndTime,BidId")] Auction auction)
@@ -109,34 +101,29 @@ namespace AuctionWebApplication.Controllers
                 return NotFound();
             }
             
-            if (ModelState.IsValid)
+            try
             {
-                try
-                {
-                    _context.Update(auction);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!AuctionExists(auction.AuctionId))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
+                _context.Update(auction);
+                await _context.SaveChangesAsync();
             }
-            ViewData["BidId"] = new SelectList(_context.Bids, "BidId", "BidId", auction.BidId);
-            ViewData["SellerId"] = new SelectList(_context.Users, "UserId", "UserId", auction.SellerId);
-            return View(auction);
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!AuctionExists(auction.AuctionId))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+            return RedirectToAction(nameof(Index));
         }
 
         [HttpPost]
         public async Task<IActionResult> Details(int id, int bet)
         {
+
             var auction = await _context.Auctions.FindAsync(id);
             if (auction == null)
             {
@@ -159,6 +146,7 @@ namespace AuctionWebApplication.Controllers
                 _context.Bids.Add(bid);
                 _context.SaveChanges();
                 auction.BidId = bid.BidId;
+                auction.Bid = bid;
                 _context.Update(auction);
                 _context.SaveChanges();
             }
@@ -167,7 +155,7 @@ namespace AuctionWebApplication.Controllers
                TempData["ErrorMessage"] += "Bet must be greater the current bid" + "<br>";
             }
             return RedirectToAction(nameof(Details));
-    }
+        }
        
     
         // GET: Auctions/Delete/5
@@ -179,8 +167,8 @@ namespace AuctionWebApplication.Controllers
             }
 
             var auction = await _context.Auctions
-                .Include(a => a.Bid)
                 .Include(a => a.Seller)
+                .Include(a => a.Bid).Where(a => a.EndTime > DateTime.Now)
                 .FirstOrDefaultAsync(m => m.AuctionId == id);
             if (auction == null)
             {

@@ -1,0 +1,47 @@
+﻿@model IEnumerable<AuctionWebApplication.Models.SoldItem>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Продано</h1>
+
+<p>
+    <a asp-action="Create">Create New</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.AuctionId)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FinalPrice)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Bidder)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.AuctionId)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FinalPrice)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Bidder.UserId)
+            </td>
+            <td>
+                <a asp-action="Edit" asp-route-id="@item.AuctionId">Edit</a> |
+                <a asp-action="Details" asp-route-id="@item.AuctionId">Details</a> |
+                <a asp-action="Delete" asp-route-id="@item.AuctionId">Delete</a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>

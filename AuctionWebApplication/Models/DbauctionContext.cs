@@ -25,7 +25,7 @@ public partial class DbauctionContext : DbContext
     public virtual DbSet<User> Users { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        => optionsBuilder.UseSqlServer("Server=DESKTOP-KH15CQR\\SQLEXPRESS; Database=DBAuction; Trusted_Connection=True; Trust Server Certificate=True;");
+        => optionsBuilder.UseSqlServer("Server= DESKTOP-KH15CQR\\SQLEXPRESS;Database=DBAuction; Trusted_Connection=True; Trust Server Certificate=True;");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -74,11 +74,6 @@ public partial class DbauctionContext : DbContext
                 .HasColumnType("decimal(12, 2)")
                 .HasColumnName("price");
 
-            entity.HasOne(d => d.Auction).WithMany(p => p.Bids)
-                .HasForeignKey(d => d.AuctionId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_Bid_Auction");
-
             entity.HasOne(d => d.Bidder).WithMany(p => p.Bids)
                 .HasForeignKey(d => d.BidderId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
@@ -87,20 +82,19 @@ public partial class DbauctionContext : DbContext
 
         modelBuilder.Entity<SoldItem>(entity =>
         {
-            entity.HasNoKey().ToTable("SoldItem");
+            entity.HasKey(e => e.AuctionId);
 
-            entity.Property(e => e.AuctionId).HasColumnName("auction_id");
+            entity.ToTable("SoldItem");
+
+            entity.Property(e => e.AuctionId)
+                .ValueGeneratedNever()
+                .HasColumnName("auction_id");
             entity.Property(e => e.BidderId).HasColumnName("bidder_id");
             entity.Property(e => e.FinalPrice)
                 .HasColumnType("decimal(12, 2)")
                 .HasColumnName("final_price");
 
-            entity.HasOne(d => d.Auction).WithMany()
-                .HasForeignKey(d => d.AuctionId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_SoldItem_Auction");
-
-            entity.HasOne(d => d.Bidder).WithMany()
+            entity.HasOne(d => d.Bidder).WithMany(p => p.SoldItems)
                 .HasForeignKey(d => d.BidderId)
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_SoldItem_User");

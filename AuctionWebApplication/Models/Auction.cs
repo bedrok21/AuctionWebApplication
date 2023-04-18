@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+using AuctionWebApplication.Models;
 
 namespace AuctionWebApplication.Models;
 
@@ -11,25 +13,21 @@ public partial class Auction
     public int SellerId { get; set; }
 
     [Display(Name = "Назва")]
-    [Required]
     public string AuctionName { get; set; } = null!;
 
     [Display(Name = "Опис")]
     public string? AuctionDesription { get; set; }
 
     [Display(Name = "Початкова ціна")]
-    [Required]
     public decimal StartPrice { get; set; }
 
-    [Display(Name = "Кінець аукціону")]
-    [Required]
+    [Display(Name = "Дата закінчення")]
     public DateTime EndTime { get; set; }
-
+    
     public int? BidId { get; set; }
 
     public virtual Bid? Bid { get; set; }
 
-    public virtual ICollection<Bid> Bids { get; set; } = new List<Bid>();
-
+    [Display(Name = "Продавець")]
     public virtual User Seller { get; set; } = null!;
 }
