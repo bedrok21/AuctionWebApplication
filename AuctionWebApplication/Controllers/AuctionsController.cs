@@ -66,13 +66,6 @@ namespace AuctionWebApplication.Controllers
             _context.Add(auction);
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
-            if (ModelState.IsValid)
-            {
-                
-            }
-            ViewData["BidId"] = new SelectList(_context.Bids, "BidId", "BidId", auction.BidId);
-            ViewData["SellerId"] = new SelectList(_context.Users, "UserId", "UserId", auction.SellerId);
-            return View(auction);
         }
         public async Task<IActionResult> Edit(int? id)
         {

@@ -1,4 +1,4 @@
-﻿@model IEnumerable<AuctionWebApplication.Models.SoldItem>
+﻿@model IEnumerable<AuctionWebApplication.SoldItem>
 
 @{
     ViewData["Title"] = "Index";
@@ -13,7 +13,7 @@
     <thead>
         <tr>
             <th>
-                @Html.DisplayNameFor(model => model.AuctionId)
+                @Html.DisplayNameFor(model => model.Auction.AuctionName)
             </th>
             <th>
                 @Html.DisplayNameFor(model => model.FinalPrice)
@@ -28,13 +28,13 @@
 @foreach (var item in Model) {
         <tr>
             <td>
-                @Html.DisplayFor(modelItem => item.AuctionId)
+                @Html.DisplayFor(modelItem => item.Auction.AuctionName)
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.FinalPrice)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Bidder.UserId)
+                @Html.DisplayFor(modelItem => item.Bidder.Name)
             </td>
             <td>
                 <a asp-action="Edit" asp-route-id="@item.AuctionId">Edit</a> |

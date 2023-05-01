@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using AuctionWebApplication.Models;
 
-namespace AuctionWebApplication.Models;
+namespace AuctionWebApplication;
 
 public partial class User
 {

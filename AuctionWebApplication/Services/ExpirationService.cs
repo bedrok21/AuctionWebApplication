@@ -12,15 +12,15 @@ namespace AuctionWebApplication.Services
         public ExpirationService(IServiceProvider serviceProvider)
         {
             _serviceProvider = serviceProvider;
+            _timer = new Timer(DoWork, null, TimeSpan.Zero, TimeSpan.FromSeconds(1));
         }
 
         public Task StartAsync(CancellationToken cancellationToken)
         {
-            _timer = new Timer(DoWork, null, TimeSpan.Zero, TimeSpan.FromSeconds(1));
             return Task.CompletedTask;
         }
 
-        private async void DoWork(object state)
+        private void DoWork(object state)
         {
             using (var scope = _serviceProvider.CreateScope())
             {
@@ -32,7 +32,7 @@ namespace AuctionWebApplication.Services
                 foreach (var data in expiredData)
                 {
                     {
-                        var last_bid = await context.Bids.FindAsync(data.BidId);
+                        var last_bid = context.Bids.Find(data.BidId);
                         if (last_bid != null)
                         {
                             var soldItem = new SoldItem
@@ -62,11 +62,6 @@ namespace AuctionWebApplication.Services
         {
             _timer?.Change(Timeout.Infinite, 0);
             return Task.CompletedTask;
-        }
-
-        public void Dispose()
-        {
-            _timer?.Dispose();
         }
     }
 }

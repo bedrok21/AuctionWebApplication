@@ -1,4 +1,4 @@
-﻿@model IEnumerable<AuctionWebApplication.Models.Bid>
+﻿@model IEnumerable<AuctionWebApplication.Bid>
 
 @{
     ViewData["Title"] = "Index";
@@ -40,7 +40,7 @@
                 @Html.DisplayFor(modelItem => item.BidTime)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Bidder.UserId)
+                @Html.DisplayFor(modelItem => item.Bidder.Name)
             </td>
             <td>
                 <a asp-action="Edit" asp-route-id="@item.BidId">Edit</a> |

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using AuctionWebApplication.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace AuctionWebApplication;
@@ -25,6 +24,7 @@ public partial class DbauctionContext : DbContext
     public virtual DbSet<User> Users { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see http://go.microsoft.com/fwlink/?LinkId=723263.
         => optionsBuilder.UseSqlServer("Server= DESKTOP-KH15CQR\\SQLEXPRESS;Database=DBAuction; Trusted_Connection=True; Trust Server Certificate=True;");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -93,6 +93,11 @@ public partial class DbauctionContext : DbContext
             entity.Property(e => e.FinalPrice)
                 .HasColumnType("decimal(12, 2)")
                 .HasColumnName("final_price");
+
+            entity.HasOne(d => d.Auction).WithOne(p => p.SoldItem)
+                .HasForeignKey<SoldItem>(d => d.AuctionId)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_SoldItem_Auction");
 
             entity.HasOne(d => d.Bidder).WithMany(p => p.SoldItems)
                 .HasForeignKey(d => d.BidderId)

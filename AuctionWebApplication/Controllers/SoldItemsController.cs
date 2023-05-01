@@ -21,7 +21,7 @@ namespace AuctionWebApplication.Controllers
         // GET: SoldItems
         public async Task<IActionResult> Index()
         {
-            var dbauctionContext = _context.SoldItems.Include(s => s.Bidder);
+            var dbauctionContext = _context.SoldItems.Include(s => s.Bidder).Include(s => s.Auction);
             return View(await dbauctionContext.ToListAsync());
         }
 
