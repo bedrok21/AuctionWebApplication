@@ -1,4 +1,5 @@
 ﻿@model IEnumerable<AuctionWebApplication.Bid>
+@inject DbauctionContext dbContext
 
 @{
     ViewData["Title"] = "Index";
@@ -6,9 +7,6 @@
 
 <h1>Ставки</h1>
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
 <table class="table">
     <thead>
         <tr>
@@ -31,7 +29,10 @@
 @foreach (var item in Model) {
         <tr>
             <td>
-                @Html.DisplayFor(modelItem => item.AuctionId)
+                @{
+                var auction = dbContext.Auctions.Where(c => c.AuctionId == item.AuctionId).FirstOrDefault();
+                <li>@auction.AuctionName</li>
+                }
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.Price)
@@ -41,11 +42,6 @@
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.Bidder.Name)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.BidId">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.BidId">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.BidId">Delete</a>
             </td>
         </tr>
 }

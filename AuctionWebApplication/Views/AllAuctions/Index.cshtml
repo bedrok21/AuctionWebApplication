@@ -1,0 +1,88 @@
+﻿@model IEnumerable<AuctionWebApplication.Auction>
+@inject DbauctionContext dbContext
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Аукціони</h1>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.AuctionName)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.AuctionDesription)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.StartPrice)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.EndTime)
+            </th>
+            <th>Поточна ставка</th>
+            <th>
+                @Html.DisplayNameFor(model => model.Seller)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.SoldItem.FinalPrice)
+            </th>
+            
+            <th>Статус</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.AuctionName)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.AuctionDesription)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.StartPrice)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.EndTime)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Bid.Price)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Seller.Name)
+            </td>
+                 <td>
+                    @{
+                        var sold = dbContext.SoldItems.Where(c => c.AuctionId == item.AuctionId).FirstOrDefault();
+                        if (sold != null)
+                        {
+                                        <a>@sold.FinalPrice</a>
+                        }
+                    }
+                </td>
+
+                <td>
+                    @if (item.EndTime < DateTime.Now && sold == null)
+                    {
+                            <a>Завершено</a>
+                    }
+                    else if (item.EndTime < DateTime.Now && sold != null)
+                    {
+                            <a>Завершено</a>
+                    }
+                    else
+                    {
+                            <a>Активний</a>
+                    }
+                </td>
+            <td>
+                <a asp-action="Details" asp-route-id="@item.AuctionId">Детально</a> |
+                <a asp-action="Delete" asp-route-id="@item.AuctionId">Видалити</a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>

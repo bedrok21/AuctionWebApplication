@@ -1,40 +1,48 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Identity;
+using AuctionWebApplication;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
+using System.Data;
 
 namespace AuctionWebApplication.Controllers
 {
-    public class AuctionsController : Controller
+    [Authorize(Roles = "admin,user")]
+    public class MyAuctionsController : Controller
     {
         private readonly DbauctionContext _context;
 
-        public AuctionsController(DbauctionContext context)
+        public MyAuctionsController(DbauctionContext context)
         {
             _context = context;
         }
-        // GET: Auctions
+
+        // GET: MyAuctions
         public async Task<IActionResult> Index()
         {
             var dbauctionContext = _context.Auctions
                 .Include(a => a.Seller)
                 .Include(a => a.Bid)
-                .Where(a => a.EndTime > DateTime.Now);
+                .Where(a => a.SellerId == User.FindFirstValue(ClaimTypes.NameIdentifier));
             return View(await dbauctionContext.ToListAsync());
         }
 
-        // GET: Auctions/Details/5
+        // GET: MyAuctions/Details/5
         public async Task<IActionResult> Details(int? id)
         {
-			if (id == null || _context.Auctions == null)
+            if (id == null || _context.Auctions == null)
             {
                 return NotFound();
             }
 
             var auction = await _context.Auctions
+                .Include(a => a.Bid)
                 .Include(a => a.Seller)
-                .Include(a =>a.Bid).Where(a => a.EndTime > DateTime.Now)
                 .FirstOrDefaultAsync(m => m.AuctionId == id);
             if (auction == null)
             {
@@ -44,21 +52,13 @@ namespace AuctionWebApplication.Controllers
             return View(auction);
         }
 
-        // GET: Auctions/Create
+        // GET: MyAuctions/Create
         public IActionResult Create()
         {
-            if (User.Identity.IsAuthenticated)
-            {
-                return View();
-            }
-            else
-            {
-                TempData["ErrorMessage"] += "Require Authentication" + "<br>";
-                return RedirectToAction("Index", "Auctions");
-            }
+            return View();
         }
 
-        // POST: Auctions/Create
+        // POST: MyAuctions/Create
         // To protect from overposting attacks, enable the specific properties you want to bind to.
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
@@ -70,6 +70,8 @@ namespace AuctionWebApplication.Controllers
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
+
+        // GET: MyAuctions/Edit/5
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null || _context.Auctions == null)
@@ -87,83 +89,44 @@ namespace AuctionWebApplication.Controllers
             return View(auction);
         }
 
-        // POST: Auctions/Edit/5
+        // POST: MyAuctions/Edit/5
+        // To protect from overposting attacks, enable the specific properties you want to bind to.
+        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, [Bind("AuctionId,SellerId,AuctionName,AuctionDesription,StartPrice,EndTime,BidId")] Auction auction)
         {
-            try
+            if (id != auction.AuctionId)
             {
-                _context.Update(auction);
-                await _context.SaveChangesAsync();
+                return NotFound();
             }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!AuctionExists(auction.AuctionId))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-            return RedirectToAction(nameof(Index));
-        }
 
-        [HttpPost]
-        public async Task<IActionResult> Details(int id, int bet)
-        {
-
-            var auction = await _context.Auctions.FindAsync(id);
-            if (auction == null)
+            if (ModelState.IsValid)
             {
+                try
+                {
+                    _context.Update(auction);
+                    await _context.SaveChangesAsync();
+                }
+                catch (DbUpdateConcurrencyException)
+                {
+                    if (!AuctionExists(auction.AuctionId))
+                    {
+                        return NotFound();
+                    }
+                    else
+                    {
+                        throw;
+                    }
+                }
                 return RedirectToAction(nameof(Index));
             }
-            var currentBid = await _context.Bids.FindAsync(auction.BidId);
-            if (auction.SellerId== User.FindFirstValue(ClaimTypes.NameIdentifier))
-            {
-                TempData["ErrorMessage"] += "Не можливо поставити ставку на свій аукціон" + "<br>";
-            }
-            else if (currentBid == null && bet < auction.StartPrice)
-            {
-                TempData["ErrorMessage"] += "Ставка повинна бути більшою ніж початкова ціна" + "<br>";
-            }
-            else if (currentBid==null || bet > currentBid.Price )
-            {
-                if (currentBid != null)
-                {
-                    var curUser = _context.Users.Where(c => c.UserId == currentBid.BidderId).FirstOrDefault();
-                    curUser.Freeze -= currentBid.Price;
-                    _context.Update(curUser);
-                }
-                var bid = new Bid
-                {
-                    AuctionId = id,
-                    BidderId = User.FindFirstValue(ClaimTypes.NameIdentifier),
-                    Price = bet,
-                    BidTime = DateTime.Now
-                };
-                var newUser = _context.Users.Where(c => c.UserId == User.FindFirstValue(ClaimTypes.NameIdentifier)).FirstOrDefault();
-                newUser.Freeze += bet;
-                _context.Update(newUser);
-                _context.Bids.Add(bid);
-                _context.SaveChanges();
-                auction.BidId = bid.BidId;
-                auction.Bid = bid;
-                _context.Update(auction);
-                _context.SaveChanges();
-            }
-            else if (bet <= currentBid.Price)
-            {
-               TempData["ErrorMessage"] += "Ставка повинна бути більшою ніж остання ставка" + "<br>";
-            }
-            
+            ViewData["BidId"] = new SelectList(_context.Bids, "BidId", "BidId", auction.BidId);
+            ViewData["SellerId"] = new SelectList(_context.Users, "UserId", "UserId", auction.SellerId);
             return View(auction);
         }
-       
-    
-        // GET: Auctions/Delete/5
+
+        // GET: MyAuctions/Delete/5
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null || _context.Auctions == null)
@@ -172,8 +135,8 @@ namespace AuctionWebApplication.Controllers
             }
 
             var auction = await _context.Auctions
+                .Include(a => a.Bid)
                 .Include(a => a.Seller)
-                .Include(a => a.Bid).Where(a => a.EndTime > DateTime.Now)
                 .FirstOrDefaultAsync(m => m.AuctionId == id);
             if (auction == null)
             {
@@ -183,7 +146,7 @@ namespace AuctionWebApplication.Controllers
             return View(auction);
         }
 
-        // POST: Auctions/Delete/5
+        // POST: MyAuctions/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
@@ -197,6 +160,7 @@ namespace AuctionWebApplication.Controllers
             {
                 _context.Auctions.Remove(auction);
             }
+            
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }

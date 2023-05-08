@@ -132,7 +132,7 @@ namespace AuctionWebApplication.Controllers
             {
                 return NotFound();
             }
-
+            
             var soldItem = await _context.SoldItems
                 .Include(s => s.Bidder)
                 .FirstOrDefaultAsync(m => m.AuctionId == id);
@@ -153,7 +153,9 @@ namespace AuctionWebApplication.Controllers
             {
                 return Problem("Entity set 'DbauctionContext.SoldItems'  is null.");
             }
-            var soldItem = await _context.SoldItems.FindAsync(id);
+            var soldItem = await _context.SoldItems
+                .FirstOrDefaultAsync();
+
             if (soldItem != null)
             {
                 _context.SoldItems.Remove(soldItem);

@@ -1,19 +1,16 @@
-﻿@model IEnumerable<AuctionWebApplication.SoldItem>
-
+﻿@using System.Security.Claims;
+@model IEnumerable<SoldItem>
 @{
     ViewData["Title"] = "Index";
 }
 
 <h1>Продано</h1>
 
-<p>
-    <a asp-action="Create">Create New</a>
-</p>
 <table class="table">
     <thead>
         <tr>
             <th>
-                @Html.DisplayNameFor(model => model.Auction.AuctionName)
+                @Html.DisplayNameFor(model => model.Auction)
             </th>
             <th>
                 @Html.DisplayNameFor(model => model.FinalPrice)
@@ -37,9 +34,15 @@
                 @Html.DisplayFor(modelItem => item.Bidder.Name)
             </td>
             <td>
-                <a asp-action="Edit" asp-route-id="@item.AuctionId">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.AuctionId">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.AuctionId">Delete</a>
+                @if (User.FindFirstValue(ClaimTypes.Role) == "admin")
+                {
+                        <a asp-action="Details" asp-route-id="@item.AuctionId">Детально</a>
+                        <a asp-action="Delete" asp-route-id="@item.AuctionId">Видалити</a>
+                }
+                else
+                {
+                        <a asp-action="Details" asp-route-id="@item.AuctionId">Детально</a> 
+                }
             </td>
         </tr>
 }

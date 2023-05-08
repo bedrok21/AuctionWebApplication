@@ -31,29 +31,36 @@ namespace AuctionWebApplication.Services
 
                 foreach (var data in expiredData)
                 {
+                    
+                    var last_bid = context.Bids.Find(data.BidId);
+                    if (last_bid != null)
                     {
-                        var last_bid = context.Bids.Find(data.BidId);
-                        if (last_bid != null)
+                        var buyer = context.Users.Where(c => c.UserId == last_bid.BidderId).FirstOrDefault();
+                        var seller = context.Users.Where(c => c.UserId == data.SellerId).FirstOrDefault();
+                        buyer.Freeze -= last_bid.Price;
+                        buyer.Balance -= last_bid.Price;
+                        seller.Balance += last_bid.Price;
+                        var soldItem = new SoldItem
                         {
-                            var soldItem = new SoldItem
-                            {
-                                AuctionId = data.AuctionId,
-                                FinalPrice = last_bid.Price,
-                                BidderId = last_bid.BidderId
-                            };
-                            context.SoldItems.Add(soldItem);
-                            context.SaveChanges();
-                        }
-                        var bids = context.Bids
-                                        .Where(m => m.AuctionId == data.AuctionId)
-                                        .ToList();
-
-                        foreach (var bid in bids)
-                        {
-                            context.Bids.Remove(bid);
-                        }
+                            AuctionId = data.AuctionId,
+                            FinalPrice = last_bid.Price,
+                            BidderId = last_bid.BidderId
+                        };
+                        context.Update(buyer);
+                        context.Update(seller);
+                        context.SoldItems.Add(soldItem);
                         context.SaveChanges();
                     }
+                    var bids = context.Bids
+                                    .Where(m => m.AuctionId == data.AuctionId)
+                                    .ToList();
+
+                    foreach (var bid in bids)
+                    {
+                        context.Bids.Remove(bid);
+                    }
+                    context.SaveChanges();
+                    
                 }
             }
         }

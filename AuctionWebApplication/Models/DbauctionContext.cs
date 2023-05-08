@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using AuctionWebApplication.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace AuctionWebApplication;
@@ -45,7 +46,9 @@ public partial class DbauctionContext : DbContext
             entity.Property(e => e.EndTime)
                 .HasColumnType("datetime")
                 .HasColumnName("end_time");
-            entity.Property(e => e.SellerId).HasColumnName("seller_id");
+            entity.Property(e => e.SellerId)
+                .HasMaxLength(450)
+                .HasColumnName("seller_id");
             entity.Property(e => e.StartPrice)
                 .HasColumnType("decimal(12, 2)")
                 .HasColumnName("start_price");
@@ -69,7 +72,9 @@ public partial class DbauctionContext : DbContext
             entity.Property(e => e.BidTime)
                 .HasColumnType("datetime")
                 .HasColumnName("bid_time");
-            entity.Property(e => e.BidderId).HasColumnName("bidder_id");
+            entity.Property(e => e.BidderId)
+                .HasMaxLength(450)
+                .HasColumnName("bidder_id");
             entity.Property(e => e.Price)
                 .HasColumnType("decimal(12, 2)")
                 .HasColumnName("price");
@@ -89,7 +94,9 @@ public partial class DbauctionContext : DbContext
             entity.Property(e => e.AuctionId)
                 .ValueGeneratedNever()
                 .HasColumnName("auction_id");
-            entity.Property(e => e.BidderId).HasColumnName("bidder_id");
+            entity.Property(e => e.BidderId)
+                .HasMaxLength(450)
+                .HasColumnName("bidder_id");
             entity.Property(e => e.FinalPrice)
                 .HasColumnType("decimal(12, 2)")
                 .HasColumnName("final_price");
@@ -110,18 +117,16 @@ public partial class DbauctionContext : DbContext
             entity.ToTable("User");
 
             entity.Property(e => e.UserId).HasColumnName("user_id");
-            entity.Property(e => e.Email)
-                .HasMaxLength(50)
-                .IsUnicode(false)
-                .HasColumnName("email");
+            entity.Property(e => e.Balance)
+                .HasColumnType("decimal(12, 2)")
+                .HasColumnName("balance");
+            entity.Property(e => e.Freeze)
+                .HasColumnType("decimal(12, 2)")
+                .HasColumnName("freeze");
             entity.Property(e => e.Name)
                 .HasMaxLength(50)
                 .IsUnicode(false)
                 .HasColumnName("name");
-            entity.Property(e => e.Password)
-                .HasMaxLength(50)
-                .IsUnicode(false)
-                .HasColumnName("password");
         });
 
         OnModelCreatingPartial(modelBuilder);

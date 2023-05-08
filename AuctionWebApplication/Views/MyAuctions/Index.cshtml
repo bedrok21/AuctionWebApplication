@@ -1,21 +1,15 @@
 ﻿@model IEnumerable<AuctionWebApplication.Auction>
-@using System.Security.Claims;
+@inject DbauctionContext dbContext
+
 @{
     ViewData["Title"] = "Index";
 }
-@if (TempData["ErrorMessage"] != null)
-{
-        <div class="alert alert-danger">@Html.Raw(TempData["ErrorMessage"])</div>
-}
-<h1>Аукціони</h1>
 
-@if (User.Identity.IsAuthenticated)
-{
-        <p>
-        <a asp-action="Create">Створити аукціон</a>
-    </p>
-}
+<h2>Мої аукціони</h2>
 
+<p>
+    <a asp-action="Create">Створити аукціон</a>
+</p>
 <table class="table">
     <thead>
         <tr>
@@ -32,11 +26,9 @@
                 @Html.DisplayNameFor(model => model.EndTime)
             </th>
             <th>
-                @Html.DisplayNameFor(model => model.Seller)
+                @Html.DisplayNameFor(model => model.SoldItem.FinalPrice)
             </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Bid.Price)
-            </th>
+            <th>Статус</th>
             <th></th>
         </tr>
     </thead>
@@ -56,10 +48,28 @@
                 @Html.DisplayFor(modelItem => item.EndTime)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.Seller.Name)
+                    @{
+                        var sold = dbContext.SoldItems.Where(c => c.AuctionId == item.AuctionId).FirstOrDefault();
+                        if (sold != null)
+                        {
+                            <a>@sold.FinalPrice</a>
+                        }
+                        }
             </td>
+           
             <td>
-                @Html.DisplayFor(modelItem => item.Bid.Price)
+                @if (item.EndTime < DateTime.Now && sold==null)
+                {
+                    <a>Завершено</a>
+                }
+                else if (item.EndTime < DateTime.Now && sold != null)
+                {
+                    <a>Завершено</a>
+                }
+                else
+                {
+                    <a>Активний</a>
+                }
             </td>
             <td>
                 <a asp-action="Details" asp-route-id="@item.AuctionId">Детально</a> 
