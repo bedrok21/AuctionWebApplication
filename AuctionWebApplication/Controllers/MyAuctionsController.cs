@@ -12,7 +12,6 @@ using System.Data;
 
 namespace AuctionWebApplication.Controllers
 {
-    [Authorize(Roles = "admin,user")]
     public class MyAuctionsController : Controller
     {
         private readonly DbauctionContext _context;

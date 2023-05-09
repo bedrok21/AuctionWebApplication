@@ -114,16 +114,24 @@ namespace AuctionWebApplication.Controllers
         [HttpPost]
         public async Task<IActionResult> Details(int id, int bet)
         {
-
+            var newUser = _context.Users.Where(c => c.UserId == User.FindFirstValue(ClaimTypes.NameIdentifier)).FirstOrDefault();
             var auction = await _context.Auctions.FindAsync(id);
             if (auction == null)
             {
                 return RedirectToAction(nameof(Index));
             }
             var currentBid = await _context.Bids.FindAsync(auction.BidId);
-            if (auction.SellerId== User.FindFirstValue(ClaimTypes.NameIdentifier))
+            if (newUser== null) 
+            {
+                TempData["ErrorMessage"] += "Ставити ставку можуть лише авторизовані користувачі" + "<br>";
+            }
+            else if (auction.SellerId== User.FindFirstValue(ClaimTypes.NameIdentifier))
             {
                 TempData["ErrorMessage"] += "Не можливо поставити ставку на свій аукціон" + "<br>";
+            }
+            else if (bet > newUser.Balance - newUser.Freeze)
+            {
+                TempData["ErrorMessage"] += "Недостатній баланс для здійснення ставки" + "<br>";
             }
             else if (currentBid == null && bet < auction.StartPrice)
             {
@@ -140,11 +148,11 @@ namespace AuctionWebApplication.Controllers
                 var bid = new Bid
                 {
                     AuctionId = id,
-                    BidderId = User.FindFirstValue(ClaimTypes.NameIdentifier),
+                    BidderId = newUser.UserId,
                     Price = bet,
                     BidTime = DateTime.Now
                 };
-                var newUser = _context.Users.Where(c => c.UserId == User.FindFirstValue(ClaimTypes.NameIdentifier)).FirstOrDefault();
+                
                 newUser.Freeze += bet;
                 _context.Update(newUser);
                 _context.Bids.Add(bid);
